@@ -39,6 +39,9 @@ dependencies:
   animated_splash_screen: ^1.3.0
   lottie: ^1.2.1
   flutter_svg: ^1.1.6
+  http : ^0.13.5
+  shared_preferences: ^2.0.18
+  email_validator: ^2.1.17
 
 dev_dependencies:
   flutter_test:
