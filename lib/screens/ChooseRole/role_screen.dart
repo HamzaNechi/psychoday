@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:psychoday/utils/style.dart';
-import '../../components/background.dart';
-import 'package:psychoday/utils/constants.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:psychoday/screens/ChooseRole/components/role_form.dart';
+import 'package:psychoday/screens/ChooseRole/components/role_screen_top_image.dart';
 import 'package:psychoday/utils/responsive.dart';
-import 'components/sign_up_top_image.dart';
-import 'components/signup_form.dart';
-import 'components/socal_sign_up.dart';
+import 'package:psychoday/utils/style.dart';
 
-class SignUpScreen extends StatelessWidget {
-  const SignUpScreen({Key? key}) : super(key: key);
+import '../../components/background.dart';
+
+class RoleScreen extends StatelessWidget {
+  //var
+  final GoogleSignInAccount user;
+  const RoleScreen({Key? key, required this.user}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -16,25 +18,23 @@ class SignUpScreen extends StatelessWidget {
       bg: Style.whiteColor,
       child: SingleChildScrollView(
         child: Responsive(
-          mobile: const MobileSignupScreen(),
+          mobile: MobileLoginScreen(user: user),
           desktop: Row(
             children: [
               const Expanded(
-                child: SignUpScreenTopImage(),
+                child: RoleScreenTopImage(),
               ),
               Expanded(
-                child: Column(
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
+                  children: [
                     SizedBox(
                       width: 450,
-                      child: SignUpForm(),
+                      child: RoleForm(user: user),
                     ),
-                    SizedBox(height: defaultPadding / 2),
-                    // SocalSignUp()
                   ],
                 ),
-              )
+              ),
             ],
           ),
         ),
@@ -43,9 +43,12 @@ class SignUpScreen extends StatelessWidget {
   }
 }
 
-class MobileSignupScreen extends StatelessWidget {
-  const MobileSignupScreen({
+class MobileLoginScreen extends StatelessWidget {
+  //var
+  final GoogleSignInAccount user;
+  const MobileLoginScreen({
     Key? key,
+    required this.user,
   }) : super(key: key);
 
   @override
@@ -53,18 +56,17 @@ class MobileSignupScreen extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
-        const SignUpScreenTopImage(),
+        const RoleScreenTopImage(),
         Row(
-          children: const [
+          children: [
             Spacer(),
             Expanded(
               flex: 8,
-              child: SignUpForm(),
+              child: RoleForm(user: user),
             ),
             Spacer(),
           ],
         ),
-        // const SocalSignUp()
       ],
     );
   }

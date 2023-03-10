@@ -3,8 +3,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:psychoday/utils/style.dart';
 import '../../../utils/constants.dart';
 
-class LoginScreenTopImage extends StatelessWidget {
-  const LoginScreenTopImage({
+class RoleScreenTopImage extends StatelessWidget {
+  const RoleScreenTopImage({
     Key? key,
   }) : super(key: key);
 
@@ -13,7 +13,7 @@ class LoginScreenTopImage extends StatelessWidget {
     return Column(
       children: [
         const Text(
-          "LOGIN",
+          "Choose your role",
           style: TextStyle(
               fontWeight: FontWeight.bold,
               color: Style.primaryLight,
@@ -26,8 +26,8 @@ class LoginScreenTopImage extends StatelessWidget {
             const Spacer(),
             Expanded(
               flex: 8,
-              child:
-                  Image.asset("Assets/images/login.jpg", width: 300, height: 300),
+              child: Image.asset("Assets/images/choose.png",
+                  width: 300, height: 300),
             ),
             const Spacer(),
           ],

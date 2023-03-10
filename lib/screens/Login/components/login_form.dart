@@ -1,11 +1,18 @@
 import 'dart:convert';
+
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:psychoday/screens/ChooseRole/role_screen.dart';
+import 'package:psychoday/screens/testUser.dart';
 import 'package:psychoday/utils/style.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../components/already_have_an_account_acheck.dart';
 import '../../../utils/constants.dart';
+import '../../Signup/components/or_divider.dart';
 import '../../Signup/signup_screen.dart';
+import 'google_sign_in_api.dart';
 
 class LoginForm extends StatefulWidget {
   const LoginForm({
@@ -18,8 +25,11 @@ class LoginForm extends StatefulWidget {
 
 class _LoginFormState extends State<LoginForm> {
   //var
+  late final GoogleSignInAccount user;
   late String _email;
   late String _password;
+  late String _nickname;
+  late String _fullname;
   final GlobalKey<FormState> _keyForm = GlobalKey<FormState>();
 
   //actions
@@ -43,6 +53,14 @@ class _LoginFormState extends State<LoginForm> {
         print("Response status: ${response.statusCode}");
         var jsonResponse = response.body;
         print(jsonResponse);
+        // Save jsonResponse in SharedPreferences
+        SharedPreferences.getInstance().then((sp) {
+          sp.setString("_id", json.decode(jsonResponse)['_id']);
+          sp.setString("fullName", json.decode(jsonResponse)['fullName']);
+          sp.setInt("nickName", json.decode(jsonResponse)['nickName']);
+          sp.setBool("email", json.decode(jsonResponse)['email']);
+          sp.setBool("role", json.decode(jsonResponse)['role']);
+        });
 
         //Navigator.pushReplacementNamed(context, BottomNavScreen.routeName);
       } else if (response.statusCode == 401) {
@@ -77,6 +95,78 @@ class _LoginFormState extends State<LoginForm> {
         );
       }
     });
+  }
+
+  Future signInGoogle() async {
+    final user = await GoogleSignInApi.login();
+    if (user == null) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Sign in Failed')));
+    } else {
+      //url
+      Uri addUriGoogle = Uri.parse("$BASE_URL/user/loginGoogle");
+
+      //data to send
+      Map<String, dynamic> userObjectGoogle = {
+        "email": user.email,
+        "role": "",
+        "nickName": "",
+        "fullName": user.displayName
+      };
+
+      //data to send
+      Map<String, String> headersGoogle = {
+        "Content-Type": "application/json",
+      };
+
+      //request
+      await http
+          .post(addUriGoogle,
+              headers: headersGoogle, body: json.encode(userObjectGoogle))
+          .then((response) async {
+        if (response.statusCode == 200) {
+          var jsonResponseGoogle = response.body;
+          // print(jsonResponseGoogle);
+
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (context) => testUser(user: user)));
+
+         /* Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (context) => RoleScreen(user: user)));*/
+          //Navigator.pushReplacementNamed(context, BottomNavScreen.routeName);
+        } else if (response.statusCode == 403) {
+          showDialog(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                title: const Text("Information"),
+                content: const Text("Email or password are incorrect!"),
+                actions: [
+                  TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text("Dismiss"))
+                ],
+              );
+            },
+          );
+        } else {
+          showDialog(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                title: const Text("Information"),
+                content: const Text("Server error! Try again later"),
+                actions: [
+                  TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text("Dismiss"))
+                ],
+              );
+            },
+          );
+        }
+      });
+    }
   }
 
   @override
@@ -168,6 +258,19 @@ class _LoginFormState extends State<LoginForm> {
                 ),
               );
             },
+          ),
+          const SizedBox(height: defaultPadding),
+          const OrDivider(),
+          FloatingActionButton.extended(
+            onPressed: signInGoogle,
+            icon: Image.asset(
+              'Assets/google_logo.png',
+              height: 30,
+              width: 30,
+            ),
+            label: Text('Sign in with Google'),
+            backgroundColor: Colors.white,
+            foregroundColor: Colors.black,
           ),
         ],
       ),

@@ -5,4 +5,4 @@ const kPrimaryLightColor = Color(0xFFF1E6FF);
 
 const double defaultPadding = 16.0;
 
-const String BASE_URL = "http://localhost:7001";
+const String BASE_URL = "http://192.168.1.16:7001";
