@@ -4,6 +4,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+
+import '../utils/constants.dart';
 
 class RootApp extends StatefulWidget {
   const RootApp({Key? key}) : super(key: key);
@@ -42,14 +45,28 @@ class _RootAppState extends State<RootApp> {
   Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
 }
 
+ 
   Future<void> _pickProfileImage() async {
-    final pickedFile = await ImagePicker().getImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      setState(() {
-        _profileImage = File(pickedFile.path);
-      });
+  final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
+  if (pickedFile != null) {
+    final fileBytes = await pickedFile.readAsBytes();
+    final response = await http.post(
+      Uri.parse('$BASE_URL/user/updatePhoto/$_email'),
+      body: fileBytes,
+    );
+    if (response.statusCode == 200) {
+      // The photo was successfully uploaded to your server.
+      // You can save the photo on the server or retrieve a URL to the photo
+      // and save it to your database or display it in your app.
+    } else {
+      // Handle error uploading photo to server
     }
   }
+}
+
+
+  
+
 
 
   @override

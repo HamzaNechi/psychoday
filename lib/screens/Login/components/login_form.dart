@@ -2,11 +2,13 @@ import 'dart:convert';
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:psychoday/components/forgetpassword.dart';
+import 'package:psychoday/screens/Login/components/2fa.dart';
 import 'package:psychoday/screens/listDoctor/pages/home_page.dart';
 import 'package:psychoday/utils/style.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../components/already_have_an_account_acheck.dart';
+import '../../../therapy/ajout_therapy.dart';
 import '../../../utils/constants.dart';
 import '../../Signup/components/forget_password.dart';
 import '../../Signup/components/verification_email.dart';
@@ -22,11 +24,46 @@ class LoginForm extends StatefulWidget {
 }
 
 class _LoginFormState extends State<LoginForm> {
-  //var
   late String _email;
   late String _password;
   final GlobalKey<FormState> _keyForm = GlobalKey<FormState>();
+  late String idUser = '';
 
+  @override
+  void initState() {
+    super.initState();
+    _loadUserId();
+  }
+
+  void _loadUserId() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('token');
+    if (token != null) {
+      // url
+      Uri addUri = Uri.parse("$BASE_URL/user/info");
+
+      // headers
+      Map<String, String> headers = {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $token"
+      };
+
+      // request
+      http.get(addUri, headers: headers).then((response) async {
+        if (response.statusCode == 200) {
+          final data = json.decode(response.body);
+          if (data != null) {
+            setState(() {
+              idUser = data['_id'];
+            });
+            await prefs.setString('_id', idUser);
+          }
+        } else {
+          print("Request failed with status: ${response.statusCode}.");
+        }
+      });
+    }
+  }
   //actions
   void signinAction() {
     //url
@@ -46,14 +83,28 @@ class _LoginFormState extends State<LoginForm> {
         .then((response) async {
       if (response.statusCode == 200) {
 
+         final data = json.decode(response.body);
 
+       if (data != null) {
+        final token = data['token'] ?? '';
+        final userInfo = data['userInfo'] ?? {};
+        final userId = userInfo['_id'] ?? '';
+        final fullName = userInfo['fullName'] ?? '';
+        final email = userInfo['email'] ?? '';
+
+        // Save token and user ID in shared preferences
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString('token', token);
+        await prefs.setString('_id', userId);
+
+       }
 
 
          Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) {
-              return HomePage();
+              return AddGroupTherapyScreen();
             },
           ),
         );
@@ -173,7 +224,9 @@ class _LoginFormState extends State<LoginForm> {
                     fontSize: 17),
               ),
             ),
+
           ),
+          
           const SizedBox(height: defaultPadding),
           AlreadyHaveAnAccountCheck(
             press: () {
