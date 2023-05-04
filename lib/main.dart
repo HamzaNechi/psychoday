@@ -2,15 +2,27 @@ import 'dart:ui';
 
 import 'package:animated_splash_screen/animated_splash_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:psychoday/Suivie/AddMood.dart';
+import 'package:psychoday/Suivie/AddReport.dart';
+import 'package:psychoday/Suivie/listRapport.dart';
+
 import 'package:psychoday/profile/profilepage.dart';
+import 'package:psychoday/screens/Login/components/login_otp.dart';
 import 'package:psychoday/screens/Welcome/components/login_signup_btn.dart';
 import 'package:psychoday/screens/Welcome/welcome_screen.dart';
 import 'package:psychoday/screens/listDoctor/pages/home_page.dart';
 import 'package:psychoday/screens/welcome.dart';
+import 'package:psychoday/therapy/ajout_therapy.dart';
+import 'package:psychoday/therapy/detail.dart';
+import 'package:psychoday/therapy/list_therapy.dart';
 import 'package:psychoday/utils/style.dart';
 import './utils/constants.dart';
+import 'authentification/auth.dart';
 
-void main() {
+
+
+Future<void> main() async {
+   
   runApp(const MyApp());
 }
 
@@ -51,7 +63,13 @@ class MyApp extends StatelessWidget {
         duration: 3000,
         splashIconSize:160,
         splashTransition: SplashTransition.fadeTransition, 
-        nextScreen:  Welcome()),
+        nextScreen:  ListRapport
+        ()),
+           routes: {
+    
+        HomeScreen.routeName: (context) => const HomeScreen(),
+        DetailsScreen.routeName: (context) => const DetailsScreen(),
+      },
     );
   }
 }

@@ -17,53 +17,46 @@ class UpcomingCard extends StatelessWidget {
         color: Style.primaryLight,
         borderRadius: BorderRadius.circular(20),
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+      child: Flexible(
+        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(10),
             child: Image.asset(
-              'assets/doctor_2.jpg',
-              width: 45,
+              'Assets/doctor_2.jpg',
               fit: BoxFit.cover,
             ),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 5),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-               Padding(
-                padding: EdgeInsets.symmetric(horizontal: 30),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 10),
                 child: Text(
                   'Find Your Desired\nDoctor',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    fontFamily:'Red Ring' ,
-                    fontSize: 24,
+                    fontFamily: 'Red Ring',
+                    fontSize: 20,
                     color: Color.fromARGB(255, 248, 237, 237),
                   ),
                 ),
               ),
               const SizedBox(height: 5),
               Padding(
-             padding: EdgeInsets.symmetric(horizontal: 30),
+                padding: EdgeInsets.symmetric(horizontal: 10),
                 child: Text(
                   "Get your confimation",
                   style: Theme.of(context).textTheme.bodyText1!.copyWith(
                         color: Color.fromARGB(179, 254, 251, 251),
-                    fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.bold,
                       ),
                 ),
               ),
-           
-                  
-                  ],
-                ),]
-              ),);
-            
-          
-        
-      
-    
-  
-}}
+            ],
+          ),
+        ]),
+      ),
+    );
+  }
+}
