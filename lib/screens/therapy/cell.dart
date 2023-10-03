@@ -27,8 +27,8 @@ class MenuItemCard extends StatelessWidget {
             children: <Widget>[
               GestureDetector(
                 onTap: () {
-                 Navigator.pushNamed(context, DetailsScreen.routeName,
-            arguments: GameArgument(therapy: index));
+                 //Navigator.pushNamed(context, DetailsScreen.routeName,arguments: GameArgument(therapy: index));
+                 Navigator.push(context, MaterialPageRoute(builder: (context) => DetailsScreen(title: "Réservation", therapy: index)));
                 },
                 child: Row(
                   children: <Widget>[
@@ -93,7 +93,7 @@ class MenuItemCard extends StatelessWidget {
                 children: [
                   //if date meeting = date.now show button join meeting
                   Visibility(
-                    visible: verifDate(index.date),
+                    visible: true,
                     child: IconButton(
                       onPressed: () {
                         // go to screen join meeting (send roomName)

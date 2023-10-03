@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:ffi';
 
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/cupertino.dart';
@@ -7,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:psychoday/screens/therapy/SendEmail.dart';
 import 'package:psychoday/screens/therapy/therapy_argument.dart';
+import 'package:psychoday/screens/therapy/therapy_model.dart';
 
 
 import 'package:shared_preferences/shared_preferences.dart';
@@ -19,8 +21,9 @@ import 'chrono.dart';
 class DetailsScreen extends StatefulWidget {
   //var
   static const String routeName = "/Details";
-  const DetailsScreen({super.key, required this.title});
+  const DetailsScreen({super.key, required this.title, required this.therapy});
     final String title;
+    final Therapy therapy;
 
 
   @override
@@ -36,47 +39,19 @@ class _DetailsScreenState extends State<DetailsScreen> {
   //var
   bool hasTimerStopped = false;
   bool hasReserved = false;
-  //actions
-  //verify game
 
-  //buy game
-//   Future<void> sendNotification(String doctor_id) async {
-//   // Get doctor's OneSignal Player ID
-
-
-//     // Construct the notification message
-//     Map<String, dynamic> notification = {
-//       "app_id": "8934c896-948e-40ed-92be-2d292e6ac40e",
-//       "include_player_ids": [doctor_id],
-//       "contents": {"en": "A patient has reserved the therapy"},
-//       "headings": {"en": "New Reservation"},
-//       "data": {"type": "reservation"}
-//     };
-
-//     // Send the notification to OneSignal API
-//     String url = "https://onesignal.com/api/v1/notifications";
-//     Map<String, String> headers = {
-//       "Content-Type": "application/json",
-//       "Authorization": "YjZiYTUxMWItOWU2My00Y2Q0LTljYmEtNWMzMTU2YTM5ZTdh"
-//     };
-//     String body = json.encode(notification);
-//     await http.post(Uri.parse(url), headers: headers, body: body);
+  int capa=0;
+  bool reserved=false;
   
-// }
-
-
-// Future<void> _showNotification(String message) async {
-//   const AndroidNotificationDetails androidPlatformChannelSpecifics =
-//       AndroidNotificationDetails('your channel id', 'your channel name', 'your channel description',
-//           importance: Importance.max,
-//           priority: Priority.high,
-//           ticker: 'ticker');
-//   const NotificationDetails platformChannelSpecifics =
-//       NotificationDetails(android: androidPlatformChannelSpecifics);
-//   await flutterLocalNotificationsPlugin.show(
-//       0, 'New Reservation', message, platformChannelSpecifics,
-//       payload: 'item x');
-// }
+  Future getUserConnected() async{
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final String? id_user = prefs.getString('_id');
+    final String? role_user = prefs.getString('role');
+    setState(() {
+      idUserConnected=id_user!;
+      roleUserConnected=role_user!;
+    });
+  }
 
   Future<bool> Reserve(
       String patient_id, String therapy_id) async {
@@ -98,51 +73,76 @@ class _DetailsScreenState extends State<DetailsScreen> {
     await http
         .post(buyUri, headers: headers, body: json.encode(buyObject))
         .then((response) {
-           hasReserved = true; 
-           //pop up wesslek mail
-        //        Navigator.push(
-        //   context,
-        //   MaterialPageRoute(
-        //     builder: (context) {
-        //       return SendEmail();
-        //     },
-        //   ),
-        // );
+          if(response.statusCode == 201){
+            this.capa+=1;
+            setState(() {
+              reserved=true;
+            });
+            showDialog(
+              context: context,
+              builder: (context) {
+                return AlertDialog(
+                  title: const Text("Information"),
+                  content: const Text("therapy reserved successfully!"),
+                  actions: [
+                    TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text("Dismiss"))
+                  ],
+                );
+              },
+            );
+          }else{
+            if(response.statusCode == 401){
+              showDialog(
+              context: context,
+              builder: (context) {
+                return AlertDialog(
+                  title: const Text("Warning"),
+                  content: const Text("You have already reserved."),
+                  actions: [
+                    TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text("Dismiss"))
+                  ],
+                );
+              },
+              );
+            }else{
+              if(response.statusCode == 402){
+                showDialog(
+                context: context,
+                builder: (context) {
+                  return AlertDialog(
+                    title: const Text("Warning"),
+                    content: const Text("Sorry ! All seats are already reserved."),
+                    actions: [
+                      TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text("Dismiss"))
+                    ],
+                  );
+                },
+                );
+              }else{
+                showDialog(
+                    context: context,
+                    builder: (context) {
+                      return AlertDialog(
+                        title: const Text("Information"),
+                        content: const Text("Verify : Server error! Try again later"),
+                        actions: [
+                          TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text("Dismiss"))
+                        ],
+                      );
+                    },
+                  );
+              }
+            }
+          }
 
-  //           String message = 'Your reservation has been made!';
-  // _showNotification(message);
-            
-      showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: const Text("Information"),
-            content: const Text("therapy reserved successfully!"),
-            actions: [
-              TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text("Dismiss"))
-            ],
-          );
-        },
-      );
-//       if (hasReserved) {
-//   showDialog(
-//     context: context,
-//     builder: (context) {
-//       return AlertDialog(
-//         title: const Text("Information"),
-//         content: const Text("You have already reserved this therapy!"),
-//         actions: [
-//           TextButton(
-//               onPressed: () => Navigator.pop(context),
-//               child: const Text("Dismiss"))
-//         ],
-//       );
-//     },
-//   );
-//   return;
-// }
     }).onError((error, stackTrace) => showDialog(
               context: context,
               builder: (context) {
@@ -161,6 +161,67 @@ class _DetailsScreenState extends State<DetailsScreen> {
     return true;
   }
 
+Future<int> getNumberOfReservations(String therapyId) async {
+  print("therapy id getnumber = $therapyId");
+  final response = await http.get(
+    Uri.parse('$BASE_URL/reservation/number?therapy_id=$therapyId'),
+  );
+  if (response.statusCode == 200) {
+    print("capacity = ${response.body}");
+    return int.parse(response.body);
+  } else {
+    print("response code != 200");
+    throw Exception('Failed to get number of reservations');
+  }
+}
+
+Future<bool> verifIsUserReserved(String therapyId) async {
+  print("therapy id getnumber = $therapyId");
+   //headers
+    Map<String, String> headers = {
+      "Content-Type": "application/json",
+    };
+
+    //Object
+    Map<String, dynamic> buyObject = {
+      "patient_id": idUserConnected,
+      "therapy_id": therapyId,
+    };
+
+  final response = await http.post(Uri.parse('$BASE_URL/reservation/is_user_reserved'),headers: headers,body: json.encode(buyObject));
+  if (response.statusCode == 200) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+
+Future cancelReservation(String therapyId) async {
+  print("therapy id getnumber = $therapyId");
+   //headers
+    Map<String, String> headers = {
+      "Content-Type": "application/json",
+    };
+
+    //Object
+    Map<String, dynamic> buyObject = {
+      "patient_id": idUserConnected,
+      "therapy_id": therapyId,
+    };
+
+  final response = await http.post(Uri.parse('$BASE_URL/reservation/cancel_reserved'),headers: headers,body: json.encode(buyObject));
+  if (response.statusCode == 200) {
+    setState(() {
+      reserved=false;
+    });
+  } else {
+    setState(() {
+      reserved=true;
+    });
+  }
+}
+//final GameArgument args = ModalRoute.of(context)?.settings.arguments as GameArgument;
 
   @override
   void initState() {
@@ -171,20 +232,35 @@ class _DetailsScreenState extends State<DetailsScreen> {
     }); 
     // TODO: implement initState
     super.initState();
-    getUserConnected();
-     //   Noti.initialize(flutterLocalNotificationsPlugin);
-
-  }
-
-  Future getUserConnected() async{
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final String? id_user = prefs.getString('_id');
-    final String? role_user = prefs.getString('role');
-    setState(() {
-      idUserConnected=id_user!;
-      roleUserConnected=role_user!;
+    getUserConnected().then((v){
+        verifIsUserReserved(widget.therapy.id).then((value){
+        setState(() {
+          reserved=value;
+          });
+        });
     });
+
+
+    getNumberOfReservations(widget.therapy.id).then((value){
+      setState(() {
+        capa=value;
+      });
+    });
+    
+     //   Noti.initialize(flutterLocalNotificationsPlugin);
+    
+    print("hello init state one");
+    setState((){
+       print("hello init state one set state $capa");
+    });
+    
+    
+     //get reserved places
+
+
   }
+
+  
    triggerNotification(){
     AwesomeNotifications().createNotification(
       content: NotificationContent(
@@ -197,13 +273,15 @@ class _DetailsScreenState extends State<DetailsScreen> {
   //build
   @override
   Widget build(BuildContext context) {
-    final GameArgument args =
-        ModalRoute.of(context)?.settings.arguments as GameArgument;
-    final therapyDate = args.therapy.date;
     
+    final therapyDate = widget.therapy.date;
 //         DateTime therapyDate = args.therapy.date as DateTime;
 // DateTime now = DateTime.now();
 // Duration remainingTime = therapyDate.difference(now);
+   // var capacityVerif= args.therapy.capacity < 0;
+
+   
+
     return Scaffold(
       appBar: AppBar(),
       body: Padding(
@@ -216,14 +294,14 @@ class _DetailsScreenState extends State<DetailsScreen> {
               children: [
                 Container(
                     height: 300.0,
-                    child: Image.network(args.therapy.image),
+                    child: Image.network(widget.therapy.image),
                     ),
                 const SizedBox(
                   height: 20,
                 ),
                 //2
                 Text(
-                  args.therapy.titre,
+                  widget.therapy.titre,
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 45,
@@ -234,7 +312,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
                 const SizedBox(
                   height: 20,
                 ),
-                Text(args.therapy.description)
+                Text(widget.therapy.description)
               ],
             ),
 
@@ -265,34 +343,66 @@ class _DetailsScreenState extends State<DetailsScreen> {
             ),
             Center(
                 child: Text(
-                    "number of Participants : ${args.therapy.capacity.toString()}")),
+                    "number of Participants : ${this.capa.toString()}")),
             const SizedBox(
               height: 50,
             ),
-            SizedBox(
-              height: 50,
-              child: ElevatedButton.icon(
-                onPressed: () {
-                
-                  print('roleUserConnected = $roleUserConnected');
-                  print('idUserConnected = $idUserConnected');
-       //  Noti.showBigTextNotification(title: "New message title", body: "Your long body", fln: flutterLocalNotificationsPlugin);
 
-              //  if(roleUserConnected! == 'patient'){
-                    Reserve(idUserConnected!, args.therapy.id);
-                      triggerNotification();
-                      
-                    setState(() {
-                      if (args.therapy.capacity > 0) {
-                        args.therapy.setCapacity(args.therapy.capacity - 1);
-
-                      }
-                    });
-                 // }
+            Visibility(
+              visible: !reserved,
+              child: SizedBox(
+                height: 50,
+                child: ElevatedButton.icon(
+                  onPressed: () {
                   
-                },
-                icon: const Icon(CupertinoIcons.add),
-                label: const Text("Reserve Now"),
+                    print('roleUserConnected = $roleUserConnected');
+                    print('idUserConnected = $idUserConnected');
+                
+                      Reserve(idUserConnected!, widget.therapy.id);
+                        triggerNotification();
+                        
+                        
+                      setState(() {
+                        if (widget.therapy.capacity > capa) {
+                          capa+=1;
+            
+                        }
+                      });
+                   // }
+                    
+                  },
+                  icon: const Icon(CupertinoIcons.add),
+                  label: const Text("Reserve Now"),
+                ),
+              ),
+            ),
+
+
+            Visibility(
+              visible: reserved,
+              child: SizedBox(
+                height: 50,
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                  
+                    print('cancel reservation');
+                    print('idUserConnected = $idUserConnected');
+                
+                      //add future function to cancel reservation
+                        cancelReservation(widget.therapy.id);
+                        
+                      setState(() {
+                        if (widget.therapy.capacity > capa) {
+                          capa-=1;
+            
+                        }
+                      });
+                   // }
+                    
+                  },
+                  icon: const Icon(CupertinoIcons.xmark),
+                  label: const Text("Cancel reservation"),
+                ),
               ),
             ),
              const SizedBox(

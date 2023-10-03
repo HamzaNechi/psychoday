@@ -5,7 +5,7 @@ const kPrimaryLightColor = Color(0xFFF1E6FF);
 
 const double defaultPadding = 16.0;
 
-const String BASE_URL = "http://192.168.1.6:9090";
+const String BASE_URL = "http://192.168.1.23:9090";
 
 
 //ghassen constante

@@ -89,7 +89,7 @@ class MyApp extends StatelessWidget {
       routes: {
     
         HomeScreen.routeName: (context) => const HomeScreen(),
-        DetailsScreen.routeName: (context) => const DetailsScreen(title: 'Reservation',),
+       // DetailsScreen.routeName: (context) => const DetailsScreen(title: 'Reservation',),
       },
     );
   }
